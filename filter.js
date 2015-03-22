@@ -15,7 +15,7 @@ var axi_filter =
 		}
 	},
 	update_contrast: function(){
-		if (this.contrast_scale != 1 && this.avg_luminance != 0){
+		if (this.contrast_scale != 1){
 			update_contrast(this.contrast_scale,this.element_id, this.avg_luminance);										
 		}
 	}
@@ -36,7 +36,7 @@ var sag_filter =
 		}
 	},
 	update_contrast : function(){
-		if (this.contrast_scale != 1 && this.avg_luminance != 0){
+		if (this.contrast_scale != 1){
 			update_contrast(this.contrast_scale,this.element_id,this.avg_luminance);										
 		}
 	}
@@ -57,7 +57,7 @@ var cor_filter =
 		}
 	},
 	update_contrast : function(){
-		if (this.contrast_scale != 1 && this.avg_luminance != 0){
+		if (this.contrast_scale != 1){
 			update_contrast(this.contrast_scale,this.element_id, this.avg_luminance);						
 		}
 	}
@@ -79,10 +79,11 @@ function reset_slider(slider_id) {
 // used at page load to store the starting pixel values for canvas images
 function save_original() {
 	var axi_canvas = document.getElementById(axi_filter.hidden_element_id);
+//	var axi_canvas = document.getElementById(axi_filter.element_id);
 	var context = axi_canvas.getContext("2d");
 	axi_filter.base_imgd = context.getImageData(0,0,axi_canvas.width,axi_canvas.height);
 	axi_filter.avg_luminance = compute_luminance(axi_filter.base_imgd);
-	
+
 	var cor_canvas = document.getElementById(cor_filter.hidden_element_id);
 	context = cor_canvas.getContext("2d");
 	cor_filter.base_imgd = context.getImageData(0,0,cor_canvas.width,cor_canvas.height);
@@ -169,6 +170,7 @@ function update_contrast(scale_factor, element_id, avg_luminance){
 }
 
 function update_brightness(scale_factor, element_id){
+	console.log('running');
 	var canvas = document.getElementById(element_id);
 	var context = canvas.getContext("2d");
 	/*var imgd = new ImageData(base_imgd.width, base_imgd.height);
@@ -181,16 +183,6 @@ function update_brightness(scale_factor, element_id){
 	context.putImageData(imgd,0,0);  // TODO how to incorporate this with draw()
 	var slider_id = "#" + element_id.substring(0,3) + "_brightness_slider_status";									
 	$(slider_id).html(String(scale_factor));
-}
-								
-function invert(pixels) {
-	// Loop over each pixel and invert the color.
-	for (var i = 0, n = pixels.length; i < n; i += 4) {
-		pixels[i  ] = 255 - pixels[i  ]; // red
-		pixels[i+1] = 255 - pixels[i+1]; // green
-		pixels[i+2] = 255 - pixels[i+2]; // blue
-		// i+3 is alpha (the fourth element)
-	}
 }
 
 //switched to while loop to boost speed?
@@ -247,86 +239,25 @@ function brighten(pixels, scale_factor) {
 	}	
 }
 
-function compute_luminance_old(red, green, blue) {
-	return 0.30*red+0.59*green+0.11*blue;
-}
-
 function compute_luminance(pixels) {
 	var avg_luminance = 0;
-	var total_pixels = pixels.length/4;
-	for (var i = 0, n = pixels.length; i < n; i += 4) {
-		var red = pixels[i  ];
-		var green = pixels[i+1];
-		var blue = pixels[i+2];
+	var length = pixels.width * pixels.height;
+	var total_pixels = length/4;
+	for (var i = 0, n = length; i < n; i += 4) {
+		var red = pixels.data[i  ];
+		var green = pixels.data[i+1];
+		var blue = pixels.data[i+2];
 		avg_luminance += (0.30*red+0.59*green+0.11*blue)/total_pixels;
 	}
 	return avg_luminance;
 }
 
-//switched to while loop to boost speed?
-// buggy code, does not work for sag and cor
-function contrast2(pixels, scale_factor) {
-	var avg_luminance = 0;
-	var total_pixels = pixels.length/4;
-//	for (var i = 0, n = pixels.length; i < n; i += 4) {
-	var i = pixels.length-1;
-	while (i-=3) {
-		var red = pixels[i  ];
-		var green = pixels[i+1];
-		var blue = pixels[i+2];
-		avg_luminance += compute_luminance(red, green, blue)/total_pixels;
-		
-		if (i <= 0)
-			break;
-	}
-	
-	i = pixels.length-1;
-	//for (var i = 0, n = pixels.length; i < n; i += 4) {
-	while (i-=3) {
-		if ((pixels[i  ]-avg_luminance)*scale_factor+avg_luminance > 255) {
-			pixels[i  ] = 255; // red
-		} else if ((pixels[i  ]-avg_luminance)*scale_factor+avg_luminance < 0) {
-			pixels[i  ] = 0;
-		} else {
-			pixels[i  ] = (pixels[i  ]-avg_luminance)*scale_factor+avg_luminance;
-		}
-		
-		if ((pixels[i+1]-avg_luminance)*scale_factor+avg_luminance > 255) {
-			pixels[i+1] = 255; // green
-		} else if ((pixels[i+1]-avg_luminance)*scale_factor+avg_luminance < 0) {
-			pixels[i+1] = 0;
-		} else {
-			pixels[i+1] = (pixels[i+1]-avg_luminance)*scale_factor+avg_luminance;
-		}
-		
-		if ((pixels[i+2]-avg_luminance)*scale_factor+avg_luminance > 255) {
-			pixels[i+2] = 255; // blue
-		} else if ((pixels[i+2]-avg_luminance)*scale_factor+avg_luminance < 0) {
-			pixels[i+2] = 0;
-		} else {
-			pixels[i+2] = (pixels[i+2]-avg_luminance)*scale_factor+avg_luminance;
-		}
-		// i+3 is alpha (the fourth element)
-		
-		if (i <= 0)
-			break;
-	}	
-}
-
 // temp replacement for buggy code,
 // added the argument for average luminance
 function contrast(pixels, scale_factor, avg_luminance) {
-	console.log(avg_luminance);
-	// compute average luminance only once for each image
-	/*var avg_luminance = 0;
-	var total_pixels = pixels.length/4;
-	for (var i = 0, n = pixels.length; i < n; i += 4) {
-		var red = pixels[i  ];
-		var green = pixels[i+1];
-		var blue = pixels[i+2];
-		avg_luminance += compute_luminance(red, green, blue)/total_pixels;
-	}*/
+	avg_luminance = compute_luminance(pixels);
 	
+	console.log(avg_luminance)
 	for (var i = 0, n = pixels.length; i < n; i += 4) {
 		if ((pixels[i  ]-avg_luminance)*scale_factor+avg_luminance > 255) {
 			pixels[i  ] = 255; // red
