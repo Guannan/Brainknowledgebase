@@ -77,22 +77,30 @@ function reset_slider(slider_id) {
 }
 
 // used at page load to store the starting pixel values for canvas images
-function save_original() {
-	var axi_canvas = document.getElementById(axi_filter.hidden_element_id);
-//	var axi_canvas = document.getElementById(axi_filter.element_id);
-	var context = axi_canvas.getContext("2d");
-	axi_filter.base_imgd = context.getImageData(0,0,axi_canvas.width,axi_canvas.height);
-	axi_filter.avg_luminance = compute_luminance(axi_filter.base_imgd);
+function save_original(element_id) {
 
-	var cor_canvas = document.getElementById(cor_filter.hidden_element_id);
-	context = cor_canvas.getContext("2d");
-	cor_filter.base_imgd = context.getImageData(0,0,cor_canvas.width,cor_canvas.height);
-	cor_filter.avg_luminance = compute_luminance(cor_filter.base_imgd);
-	
-	var sag_canvas = document.getElementById(sag_filter.hidden_element_id);
-	context = sag_canvas.getContext("2d");
-	sag_filter.base_imgd = context.getImageData(0,0,sag_canvas.width,sag_canvas.height);
-	sag_filter.avg_luminance = compute_luminance(sag_filter.base_imgd);
+	if (element_id.substring(0,3) == "axi"){
+		var axi_canvas = document.getElementById(axi_filter.hidden_element_id);
+		var context = axi_canvas.getContext("2d");
+		axi_filter.base_imgd = context.getImageData(0,0,axi_canvas.width,axi_canvas.height);
+		axi_filter.avg_luminance = compute_luminance(axi_filter.base_imgd);
+	}
+	else if (element_id.substring(0,3) == "cor"){
+		var cor_canvas = document.getElementById(cor_filter.hidden_element_id);
+		context = cor_canvas.getContext("2d");
+		cor_filter.base_imgd = context.getImageData(0,0,cor_canvas.width,cor_canvas.height);
+		cor_filter.avg_luminance = compute_luminance(cor_filter.base_imgd);
+	}
+	else if (element_id.substring(0,3) == "sag"){
+		var sag_canvas = document.getElementById(sag_filter.hidden_element_id);
+		context = sag_canvas.getContext("2d");
+		sag_filter.base_imgd = context.getImageData(0,0,sag_canvas.width,sag_canvas.height);
+		sag_filter.avg_luminance = compute_luminance(sag_filter.base_imgd);
+	} 
+	else 
+	{
+		return;
+	}
 	
 }
 
@@ -157,8 +165,6 @@ function update_filter_setting(scale_factor,filter_name,element_id){
 }
 
 function update_contrast(scale_factor, element_id, avg_luminance){
-	// console.log(scale_factor)
-	// console.log(element_id)
 	var canvas = document.getElementById(element_id);
 	var context = canvas.getContext("2d");
 	var imgd = context.getImageData(0,0,canvas.width,canvas.height);
@@ -170,7 +176,6 @@ function update_contrast(scale_factor, element_id, avg_luminance){
 }
 
 function update_brightness(scale_factor, element_id){
-	console.log('running');
 	var canvas = document.getElementById(element_id);
 	var context = canvas.getContext("2d");
 	/*var imgd = new ImageData(base_imgd.width, base_imgd.height);
@@ -187,52 +192,26 @@ function update_brightness(scale_factor, element_id){
 
 //switched to while loop to boost speed?
 function brighten(pixels, scale_factor) {
-//	for (var i = 0, n = pixels.length; i < n; i += 4) {
+
 	var i = pixels.length;
 	var v;
 	while (i-=4) {
 	
-		if(pixels[i+2  ] != pixels[i+1  ])
-		{
-			console.log("");
-		}
-/**/	
 		v = pixels[i  ]*scale_factor;
-//		if (pixels[i  ]*scale_factor > 255) {
 		if (v > 255) {
 			pixels[i  ] = 255; // red
 			pixels[i+1] = 255; 
 			pixels[i+2] = 255;
-//		} else if (pixels[i  ]*scale_factor < 0) {
 		} else if (v < 0) {
 			pixels[i  ] = 0;
 			pixels[i+1] = 0;
 			pixels[i+2] = 0;
 		} else {
-//			pixels[i  ] = pixels[i  ]*scale_factor;
-	//		pixels[i+1  ] = pixels[i+1  ]*scale_factor;
-		//	pixels[i+2  ] = pixels[i+2  ]*scale_factor;
 			pixels[i  ] = v;
 			pixels[i+1  ] = v;
 			pixels[i+2  ] = v;
 		}
-/*		v = pixels[i+1  ]*scale_factor;
-		if (v > 255) {
-			pixels[i+1] = 255; // green
-		} else if (v < 0) {
-			pixels[i+1] = 0;
-		} else {
-			pixels[i+1] = v;
-		}
-		v = pixels[i+2  ]*scale_factor;
-		if (v > 255) {
-			pixels[i+2] = 255; // blue
-		} else if (v < 0) {
-			pixels[i+2] = 0;
-		} else {
-			pixels[i+2] = v;
-		}
-		*/
+
 		// i+3 is alpha (the fourth element)
 		if (i<=0)
 			break;
