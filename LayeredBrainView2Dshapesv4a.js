@@ -135,6 +135,18 @@ LayeredBrainView2Dnew.prototype = {
             var iobj = SearchObjectbyPropertyValue("container", this.id);
             var obj = allnew2dViews[iobj];
             obj.mousedown = false;
+			// reset the image data pixels when stage moves
+			save_original(this.id);
+			if (this.id.substring(0,3) == "axi") {
+				axi_filter.update_brightness();
+				axi_filter.update_contrast();						
+			} else if (this.id.substring(0,3) == "cor") {
+				cor_filter.update_brightness();
+				cor_filter.update_contrast();						
+			} else if (this.id.substring(0,3) == "sag") {
+				sag_filter.update_brightness();
+				sag_filter.update_contrast();						
+			}
         });
 
         $('#'+this.config.container).mousemove(function (e)
@@ -262,12 +274,29 @@ LayeredBrainView2Dnew.prototype = {
 					resetpositionfirsttimeloading(this);
 					this.firsttimeloading = false;
 	//            var a = 0;
+			
 				   this.layer.draw();
+				   console.log(layerconfig.image_type + " " + layerconfig.id);
 					switch ( this.image_type )
 					{
-						case 'hidden':
+						case 'hidden' :
+							this.layer.draw();
 							this.layer.show();
+							
 							save_original(this.view.slice_selector_id);
+							if (this.view.slice_selector_id.substring(0,3) == "axi") {
+								console.log('update');
+								axi_filter.update_brightness();
+								axi_filter.update_contrast();
+							} else if (this.view.slice_selector_id.substring(0,3) == "cor") {
+								cor_filter.update_brightness();
+								cor_filter.update_contrast();		
+							} else if (this.view.slice_selector_id.substring(0,3) == "sag") {
+								sag_filter.update_brightness();
+								sag_filter.update_contrast();		
+							}
+	
+							// this.layer.hide();
 							break;
 					}
 				   
@@ -457,17 +486,23 @@ LayeredBrainView2Dnew.prototype = {
         this.stage.setPosition(pos.x, pos.y);
 
         this.stage.draw();
-//		save_original()
-//		reset_canvas(axi_filter.element_id);		
-//		reset_canvas(cor_filter.element_id);		
-//		reset_canvas(sag_filter.element_id);		
-//		update_filter_setting(scale_factor,filter_name,axi_filter.element_id);
-		axi_filter.update_brightness();
-		axi_filter.update_contrast();
-		cor_filter.update_brightness();
-		cor_filter.update_contrast();
-		sag_filter.update_brightness();
-		sag_filter.update_contrast();
+		save_original(this.slice_selector_id);
+
+		if (this.slice_selector_id.substring(0,3) == "axi") {
+			axi_filter.update_brightness();
+			axi_filter.update_contrast();
+		} else if (this.slice_selector_id.substring(0,3) == "cor") {
+			cor_filter.update_brightness();
+			cor_filter.update_contrast();		
+		} else if (this.slice_selector_id.substring(0,3) == "sag") {
+			sag_filter.update_brightness();
+			sag_filter.update_contrast();		
+		}
+//		cor_filter.update_brightness();
+//		cor_filter.update_contrast();
+//		sag_filter.update_brightness();
+//		sag_filter.update_contrast();
+		
     },
 
     zoomout: function()
@@ -479,16 +514,20 @@ LayeredBrainView2Dnew.prototype = {
         this.stage.setPosition(pos.x, pos.y);
         
         this.stage.draw();
-/*		save_original()
-		reset_canvas(axi_filter.element_id);		
-		reset_canvas(cor_filter.element_id);			
-		reset_canvas(sag_filter.element_id);			*/
-		axi_filter.update_brightness();
-		axi_filter.update_contrast();
-		cor_filter.update_brightness();
-		cor_filter.update_contrast();
-		sag_filter.update_brightness();
-		sag_filter.update_contrast();		
+		save_original(this.slice_selector_id);
+
+		if (this.slice_selector_id.substring(0,3) == "axi") {
+			axi_filter.update_brightness();
+			axi_filter.update_contrast();
+		} else if (this.slice_selector_id.substring(0,3) == "cor") {
+			cor_filter.update_brightness();
+			cor_filter.update_contrast();		
+		} else if (this.slice_selector_id.substring(0,3) == "sag") {
+			sag_filter.update_brightness();
+			sag_filter.update_contrast();		
+		}
+		
+		
     },
     resetposition: function()
     {
